@@ -1,4 +1,4 @@
-# web-eid.js
+# web-eid.js [![npm version](https://badge.fury.io/js/web-eid.svg)](https://badge.fury.io/js/web-eid)
 
 `web-eid.js` is a ultrathin wrapper on top of the HTML5 postMessage
 interface provided by `hwcrypto-extension`.
