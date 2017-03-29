@@ -1,6 +1,6 @@
-# webeid.js
+# web-eid.js
 
-`webeid.js` is a ultrathin wrapper on top of the HTML5 postMessage
+`web-eid.js` is a ultrathin wrapper on top of the HTML5 postMessage
 interface provided by `hwcrypto-extension`.
 
 It makes using the features provided by Web eID installation super-easy:

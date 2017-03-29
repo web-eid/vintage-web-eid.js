@@ -1,0 +1,16 @@
+{
+  "name": "web-eid",
+  "version": "0.0.2",
+  "description": "Web eID client library",
+  "main": "web-eid.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-eid/web-eid.js.git"
+  },
+  "author": "Martin Paljak <martin@martinpaljak.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/web-eid/web-eid.js/issues"
+  },
+  "homepage": "https://github.com/web-eid/web-eid.js#readme"
+}
