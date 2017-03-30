@@ -105,6 +105,9 @@
       });
     };
 
+    fields.VERSION = VERSION;
+    fields.promisify = msg2promise;
+
     return fields;
   };
 
