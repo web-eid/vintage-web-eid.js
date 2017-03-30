@@ -14,13 +14,12 @@
   }
 
   var pending = null; // pending promise
-  // TODO: match ID
 
   // Resolve or reject the promise if extension and id match
   function processMessage(m) {
     var reply = m.data;
     if (reply.extension) {
-      if (reply.id) {
+      if (reply.id && pending.id == reply.id) {
         console.log("RECV: " + JSON.stringify(reply));
         if (reply.result == "ok" && !reply.error) {
           pending.resolve(reply);
@@ -48,6 +47,7 @@
       pending = {
         resolve: resolve,
         reject: reject,
+        id: msg["id"]
       };
     });
   }
