@@ -74,6 +74,7 @@ At this point of time no API stability is assured. Please note that if `window.h
 - resolves to `ArrayBuffer` of the response
 - equivalent of [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
 - slightly resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the channel related aspects.
+- comparable to [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
 
 ### `webeid.control(code, bytes)`
 - resolves to `ArrayBuffer` of the response
