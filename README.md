@@ -32,8 +32,9 @@ And simply
 - The `message` property of a rejected promise will contain a symbolic error code that can be parsed
 - Conformance to https://www.w3.org/2001/tag/doc/promises-guide is intended
 
-## Note about API stability
-At this point of time no API stability is assured
+## Note about API and stability
+At this point of time no API stability is assured. Please note that if `window.hwcrypto` from [hwcrypto.js](https://github.com/hwcrypto/hwcrypto.js) is detected, `hwcrypto.getCertificate()` and `hwcrypto.sign()` are monkeypatched.
+
 
 ### `webeid.isAvailable()`
 - resolves to `true` or `false`, depending on whether necessary client software is present or not.
