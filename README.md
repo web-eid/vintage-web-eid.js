@@ -72,7 +72,7 @@ At this point of time no API stability is assured
 ### `webeid.transmit(bytes)`
 - resolves to `ArrayBuffer` of the response
 - equivalent of [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
-- slightly resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the channel specific aspects.
+- slightly resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the channel related aspects.
 
 ### `webeid.control(code, bytes)`
 - resolves to `ArrayBuffer` of the response
@@ -82,3 +82,4 @@ At this point of time no API stability is assured
 - equivalent of [`SCardDisconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379475(v=vs.85).aspx) in PC/SC API
 
 ## Error codes
+- TBD
