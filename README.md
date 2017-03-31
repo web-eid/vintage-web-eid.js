@@ -47,7 +47,7 @@ At this point of time no API stability is assured. Please note that if `window.h
 ### `webeid.authenticate(nonce)`
 - resolves to a `string` containing the JWT token
 - possible reasons for rejection: user cancel authentication, no certificates available, some other technical error
-- JWT token description: https://github.com/martinpaljak/x509-webauth/wiki/OpenID-X509-ID-Token
+- used certificate is available in the `x5c` header field of the token. JWT token description: https://github.com/martinpaljak/x509-webauth/wiki/OpenID-X509-ID-Token
 - possible changes: resolving to `undefined` when no certificates available
 
 ### `webeid.getSigningCertificate()`
