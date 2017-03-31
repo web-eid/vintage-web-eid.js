@@ -1,0 +1,24 @@
+{
+  "name": "web-eid",
+  "description": "Web eID client library",
+  "main": "web-eid.js",
+  "authors": [
+    "Martin Paljak <martin@martinpaljak.net>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "pcsc",
+    "pkcs11",
+    "smartcard",
+    "eID",
+    "signing",
+    "authentication",
+    "cryptography"
+  ],
+  "homepage": "https://github.com/web-eid/web-eid.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ]
+}
