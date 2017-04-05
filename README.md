@@ -28,7 +28,7 @@ And simply
 
 # API
 - All calls are asynchronous in nature and return a Promise
-- While asynchronous, the API is still sequential - only one call can be serviced at a time
+- While asynchronous, the API is still sequential - only one call can be serviced by a smart card (reader) at a time. If a call can not be serviced because this reason, the promise will be rejected
 - The `message` property of a rejected promise will contain a symbolic error code that can be parsed
 - Conformance to https://www.w3.org/2001/tag/doc/promises-guide is intended
 
@@ -40,7 +40,7 @@ At this point of time no API stability is assured. Please note that if `window.h
 - resolves to `true` or `false`, depending on whether necessary client software is present or not.
 - if not present, the recommended action is to display a notice with a link to https://web-eid.com.
 - possible changes: Boolean https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-- possible changes: resolve to version information
+- possible changes: resolve to version information and/or list of available features
 
 ## PKI operations
 
@@ -73,7 +73,7 @@ At this point of time no API stability is assured. Please note that if `window.h
 ### `webeid.transmit(bytes)`
 - resolves to `ArrayBuffer` of the response
 - equivalent of [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
-- slightly resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the channel related aspects.
+- resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the tidbits of channels or `61XX`/`6CXX` handling
 - comparable to [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
 
 ### `webeid.control(code, bytes)`
