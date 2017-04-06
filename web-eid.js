@@ -1,7 +1,7 @@
 (function (window) {
   'use strict';
 
-  var VERSION = "0.0.2";
+  var VERSION = "0.0.4";
   // make a nonce
   function getNonce(l) {
     if (l === undefined) {
@@ -13,41 +13,37 @@
     return val;
   }
 
-  var pending = null; // pending promise
+  var pending = {}; // pending promises
 
   // Resolve or reject the promise if extension and id match
   function processMessage(m) {
     var reply = m.data;
     if (reply.extension) {
-      if (reply.id && pending.id == reply.id) {
+      if (reply.id && reply.id in pending) {
         console.log("RECV: " + JSON.stringify(reply));
-        if (reply.result == "ok" && !reply.error) {
-          pending.resolve(reply);
+        if (!reply.error) {
+          pending[reply.id].resolve(reply);
         } else {
-          pending.reject(new Error(reply.result));
+          pending[reply.id].reject(new Error(reply.error));
         }
-        pending = null;
+        delete pending[reply.id];
       }
     }
   }
 
   // Send a message and return the promise.
   function msg2promise(msg) {
-    if (pending != null) {
-      return Promise.reject(new Error("operation_pending")); // TODO: define
-    }
     return new Promise(function (resolve, reject) {
-        // amend with necessary metadata
+      // amend with necessary metadata
       msg["id"] = getNonce();
       msg["hwcrypto"] = true; // This will be removed by content script
       console.log("SEND: " + JSON.stringify(msg));
-        // send message to content script
+      // send message to content script
       window.postMessage(msg, "*");
-        // and store promise callbacks
-      pending = {
+      // and store promise callbacks
+      pending[msg["id"]] = {
         resolve: resolve,
         reject: reject,
-        id: msg["id"]
       };
     });
   }
@@ -73,35 +69,73 @@
 
     fields.getVersion = function () {
       return msg2promise({
-        "type": "VERSION",
+        "version": {},
       }).then(function (r) {
         return r.version;
       });
     };
 
-    fields.getCertificate = function () {
-      // resolves to a certificate handle (in real life b64)
-      return msg2promise({ "type": "CERT" }).then(function (r) {
-        return r.cert;
+    fields.isAvailable = function () {
+      fields.hasExtension().then(function (v) {
+        fields.getVersion().then(function (v) {
+          return true;
+        }).catch(function (err) {
+          return false;
+        });
+      }).catch(function (err) {
+        return false;
       });
     };
 
-    fields.sign = function (cert, hash) {
+    fields.getCertificate = function () {
+      // resolves to a certificate handle (in real life b64)
+      return msg2promise({ "cert": {} }).then(function (r) {
+        return atob(r.cert);
+      });
+    };
+
+    fields.sign = function (cert, hash, options) {
       return msg2promise({
-        "type": "SIGN",
-        "cert": cert,
-        "hash": hash,
+        "sign": {
+          "cert": btoa(cert),
+          "hash": btoa(hash),
+          "hashalgo": options.hashalgo,
+        },
       }).then(function (r) {
-        return r.signature;
+        return atob(r.signature);
       });
     };
 
     fields.auth = function (nonce) {
       return msg2promise({
-        "type": "AUTH",
-        "nonce": nonce,
+        "auth": { "nonce": nonce },
       }).then(function (r) {
         return r.token;
+      });
+    };
+
+    fields.connect = function (protocol) {
+      return msg2promise({
+        "SCardConnect": { "protocol": protocol },
+      }).then(function (r) {
+        return { "reader": r.reader, "atr": r.atr, "protocol": r.protocol };
+      });
+    };
+
+    // TODO: ByteBuffer instead of hex
+    fields.transmit = function (apdu) {
+      return msg2promise({
+        "SCardTransmit": { "bytes": apdu },
+      }).then(function (r) {
+        return r.bytes;
+      });
+    };
+
+    fields.disconnect = function () {
+      return msg2promise({
+        "SCardDisconnect": {},
+      }).then(function (r) {
+        return {};
       });
     };
 
