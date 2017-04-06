@@ -1,4 +1,4 @@
-# web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://badge.fury.io/js/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://badge.fury.io/bo/web-eid)
+# web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://www.npmjs.com/package/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://github.com/web-eid/web-eid.js)
 
  [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the messaging interface provided by [`hwcrypto-native`](https://github.com/hwcrypto/hwcrypto-native), either via [`hwcrypto-extension`](https://github.com/hwcrypto/hwcrypto-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or some other message transport in the future (like local web service or Android Intents)
 
