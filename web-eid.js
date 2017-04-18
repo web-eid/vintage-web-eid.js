@@ -2,6 +2,8 @@
   'use strict';
 
   var VERSION = "0.0.4";
+  var APPURL = "wss://app.web-eid.com:42123";
+
   // make a nonce
   function getNonce(l) {
     if (l === undefined) {
@@ -13,22 +15,42 @@
     return val;
   }
 
+  var ws; // websocket
+  var poster = postext; // By default post to extension
   var pending = {}; // pending promises
 
-  // Resolve or reject the promise if extension and id match
-  function processMessage(m) {
-    var reply = m.data;
-    if (reply.extension) {
-      if (reply.id && reply.id in pending) {
-        console.log("RECV: " + JSON.stringify(reply));
-        if (!reply.error) {
-          pending[reply.id].resolve(reply);
-        } else {
-          pending[reply.id].reject(new Error(reply.error));
-        }
-        delete pending[reply.id];
+  // Resolve or reject the promise if id matches
+  function processMessage(reply) {
+    if (reply.id && reply.id in pending) {
+      console.log("RECV: " + JSON.stringify(reply));
+      if (!reply.error) {
+        pending[reply.id].resolve(reply);
+      } else {
+        pending[reply.id].reject(new Error(reply.error));
       }
+      delete pending[reply.id];
+    } else {
+      console.error("id missing on not matched in a reply");
     }
+  }
+
+  function exthandler(m) {
+    if (m.data.extension) {
+      return processMessage(m.data);
+    }
+  }
+
+  function wshandler(m) {
+    return processMessage(JSON.parse(m.data));
+  }
+
+  function postws(m) {
+    ws.send(JSON.stringify(m));
+  }
+
+  function postext(m) {
+    m["hwcrypto"] = true; // This will be removed by content script
+    window.postMessage(m, "*");
   }
 
   // Send a message and return the promise.
@@ -36,10 +58,9 @@
     return new Promise(function (resolve, reject) {
       // amend with necessary metadata
       msg["id"] = getNonce();
-      msg["hwcrypto"] = true; // This will be removed by content script
       console.log("SEND: " + JSON.stringify(msg));
       // send message to content script
-      window.postMessage(msg, "*");
+      poster(msg);
       // and store promise callbacks
       pending[msg["id"]] = {
         resolve: resolve,
@@ -51,22 +72,39 @@
   // construct
   var webeid = function () {
     console.log("Web eID JS shim v" + VERSION);
+
     // register incoming message handler
-    window.addEventListener('message', processMessage);
+    window.addEventListener('message', exthandler);
+
+    ws = new WebSocket(APPURL);
+    ws.addEventListener('message', wshandler);
+    ws.addEventListener('error', function (event) {
+      console.error(event);
+    });
+
     // Fields to be exported
     var fields = {};
 
+    // resolves to true or false
     fields.hasExtension = function () {
       console.log("Testing for extension");
       var v = msg2promise({});
+      // If there is no extension, we shall never get a response.
+      // Thus use Promise.race() with a sensible timeout
       var t = new Promise(function (resolve, reject) {
-        setTimeout(reject, 700, 'timeout'); // TODO: make faster ?
+        setTimeout(function () {
+          reject('timeout');
+        }, 700); // TODO: make faster ?
       });
+
       return Promise.race([v, t]).then(function (r) {
-        return r.extension;
+        return true;
+      }).catch(function (err) {
+        return false;
       });
     };
 
+    // Returns app version
     fields.getVersion = function () {
       return msg2promise({
         "version": {},
@@ -75,9 +113,24 @@
       });
     };
 
+    // first try extension, then try ws
+    // possibly do some UA parsing here?
     fields.isAvailable = function () {
-      fields.hasExtension().then(function (v) {
-        fields.getVersion().then(function (v) {
+      return fields.hasExtension().then(function (v) {
+        if (!v) {
+          console.log("No extension, trying WS");
+          // This a mess. make the WS setup properly event based
+          if (ws.readyState != 1) {
+            console.log("WS is not open");
+            return false;
+          } else {
+            poster = postws;
+          }
+        } else {
+          // Extension
+          poster = postext;
+        }
+        return fields.getVersion().then(function (v) {
           return true;
         }).catch(function (err) {
           return false;
@@ -150,8 +203,9 @@
     // nodejs
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = webeid();
+    } else {
+      exports.webeid = webeid();
     }
-    exports.webeid = webeid();
   } else {
     // requirejs
     if (typeof (define) === 'function' && define.amd) {
