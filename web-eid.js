@@ -1,7 +1,7 @@
 (function (window) {
   'use strict';
 
-  var VERSION = "0.0.4";
+  var VERSION = "0.0.5";
   var APPURL = "wss://app.web-eid.com:42123";
 
   // make a nonce
