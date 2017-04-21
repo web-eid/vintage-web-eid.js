@@ -62,6 +62,7 @@ webeid.isAvailable(object options)
 - possible changes: Boolean https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
 ## PKI operations
+If a PKI call fails, the promise will be rejected with an `Error` object, which `message` property will be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
 
 ### `authenticate`
 ```javascript
@@ -127,7 +128,7 @@ webeid.sign(ArrayBuffer certificate, ArrayBuffer hash, object options)
 - possible changes: support for "last round on card" hashing
 
 ## PC/SC operations
-- if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `SCARD_E_NOT_TRANSACTED`)
+- if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
 
 ### `webeid.connect()`
 - resolves to a `object`
