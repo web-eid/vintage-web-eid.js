@@ -39,14 +39,14 @@ IE 11 does not have [Promise support](http://caniuse.com/#search=promise) thus a
 At this point of time no API stability is assured. Please note that if `window.hwcrypto` from [hwcrypto.js](https://github.com/hwcrypto/hwcrypto.js) is detected, `hwcrypto.getCertificate()` and `hwcrypto.sign()` are monkeypatched.
 
 #### Timeouts
-By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set to some calls, so that the operations that depend on user action would return sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or timeout set to `0` to get instant error code. Please note that not all calls are cancelable on all platforms, due to unerlying platform restrictions.
+By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set for some calls, so that the operations that depend on user action would fail sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or set to `0` to get an instant error code. Please note that not all calls are cancelable on all platforms, due to unerlying platform limitations.
 
 ### `isAvailable`
 ```javascript
 webeid.isAvailable(object options)
 ```
 
-| parameter  | type        | notes                           |
+| parameter  | type        |                                 |
 |------------|-------------|---------------------------------|
 | `options`  | object      | additional options (_optional_) |
 
@@ -55,16 +55,29 @@ webeid.isAvailable(object options)
 | `timeout` | timeout in seconds or `Infinity`. Default is `0`|
 
 
-- resolves to `true` or `false`, depending on whether necessary client software is present or not.
-- if `false`, the recommended action is to display a notice with a link to https://web-eid.com.
-- if called with `timeout = Infinity`, the recommended action is to display a notice during the call that asks the user to install or start the client app.
+- resolves to `true` or `false`, depending on whether necessary client software is present and available or not
+- if `false`, the recommended action is to display a notice with a link to https://web-eid.com
+- if called with `timeout = Infinity`, the recommended action is to display a dynamic notice during the call that asks the user to install or start the client app
 - recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
 - possible changes: Boolean https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-- possible changes: resolve to version information and/or list of available features
 
 ## PKI operations
 
-### `webeid.authenticate(nonce)`
+### `authenticate`
+```javascript
+webeid.authenticate(string nonce, object options)
+```
+
+| parameter  | type        |                                      |
+|------------|-------------|--------------------------------------|
+| `nonce`    | string      | nonce for the session (**required**) |
+| `options`  | object      | additional options (_optional_)      |
+
+
+| `options` |                                                        |
+|-----------|--------------------------------------------------------|
+| `timeout` | timeout in seconds or `Infinity`. Default is `Infinity`|
+
 - resolves to a `string` containing the JWT token
 - possible reasons for rejection: user cancel authentication, no certificates available, some other technical error
 - used certificate is available in the `x5c` header field of the token. JWT token description: https://github.com/martinpaljak/x509-webauth/wiki/OpenID-X509-ID-Token
