@@ -1,6 +1,6 @@
 # web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://www.npmjs.com/package/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://github.com/web-eid/web-eid.js)
 
- [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the messaging interface provided by [`hwcrypto-native`](https://github.com/hwcrypto/hwcrypto-native), either via [`hwcrypto-extension`](https://github.com/hwcrypto/hwcrypto-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or some other message transport in the future (like local web service or Android Intents)
+ [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the messaging interface provided by [Web eID app](https://github.com/web-eid/web-eid), either via [`hwcrypto-extension`](https://github.com/hwcrypto/hwcrypto-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like Android Intents)
 
 It makes using the features provided by Web eID installation as available via [web-eid.com](https://web-eid.com) super-easy:
 
@@ -26,19 +26,39 @@ And simply
 
     webeid = require('web-eid');
 
+### Note for IE users
+IE 11 does not have [Promise support](http://caniuse.com/#search=promise) thus a polyfill is needed.
+
 # API
 - All calls are asynchronous in nature and return a Promise
-- While asynchronous, the API is still sequential - only one call can be serviced by a smart card (reader) at a time. If a call can not be serviced because this reason, the promise will be rejected
-- The `message` property of a rejected promise will contain a symbolic error code that can be parsed
+- While asynchronous, the API is still sequential - only one call can be serviced by a smart card (reader) at a time. If a call can not be serviced because this reason, the promise shall be rejected
+- The `message` property of a rejected promise (an [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))= will contain a symbolic error code that can be parsed
 - Conformance to https://www.w3.org/2001/tag/doc/promises-guide is intended
 
 ## Note about API and stability
 At this point of time no API stability is assured. Please note that if `window.hwcrypto` from [hwcrypto.js](https://github.com/hwcrypto/hwcrypto.js) is detected, `hwcrypto.getCertificate()` and `hwcrypto.sign()` are monkeypatched.
 
+#### Timeouts
+By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set to some calls, so that the operations that depend on user action would return sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or timeout set to `0` to get instant error code. Please note that not all calls are cancelable on all platforms, due to unerlying platform restrictions.
 
-### `webeid.isAvailable()`
+### `isAvailable`
+```javascript
+webeid.isAvailable(object options)
+```
+
+| parameter  | type        | notes                           |
+|------------|-------------|---------------------------------|
+| `options`  | object      | additional options (_optional_) |
+
+| `options` |                                                 |
+|-----------|-------------------------------------------------|
+| `timeout` | timeout in seconds or `Infinity`. Default is `0`|
+
+
 - resolves to `true` or `false`, depending on whether necessary client software is present or not.
-- if not present, the recommended action is to display a notice with a link to https://web-eid.com.
+- if `false`, the recommended action is to display a notice with a link to https://web-eid.com.
+- if called with `timeout = Infinity`, the recommended action is to display a notice during the call that asks the user to install or start the client app.
+- recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
 - possible changes: Boolean https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 - possible changes: resolve to version information and/or list of available features
 
