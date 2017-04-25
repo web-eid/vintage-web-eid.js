@@ -12,5 +12,15 @@
   "bugs": {
     "url": "https://github.com/web-eid/web-eid.js/issues"
   },
-  "homepage": "https://github.com/web-eid/web-eid.js#readme"
+  "homepage": "https://github.com/web-eid/web-eid.js#readme",
+  "devDependencies": {
+    "pre-commit": "^1.2.2",
+    "standard": "^10.0.2"
+  },
+  "scripts": {
+    "indent": "standard --fix --global WebSocket --global define"
+  },
+  "pre-commit": [
+    "indent"
+  ]
 }
