@@ -178,15 +178,15 @@
 
     fields.getCertificate = function () {
       // resolves to a certificate handle (in real life b64)
-      return msg2promise({ 'cert': {} }).then(function (r) {
-        return window.atob(r.cert)
+      return msg2promise({ 'certificate': {} }).then(function (r) {
+        return window.atob(r.certificate)
       })
     }
 
     fields.sign = function (cert, hash, options) {
       return msg2promise({
         'sign': {
-          'cert': window.btoa(cert),
+          'certificate': window.btoa(cert),
           'hash': window.btoa(hash),
           'hashalgo': options.hashalgo
         }
@@ -197,12 +197,13 @@
 
     fields.auth = function (nonce) {
       return msg2promise({
-        'auth': { 'nonce': nonce }
+        'authenticate': { 'nonce': nonce }
       }).then(function (r) {
         return r.token
       })
     }
 
+    // TODO: return a reader object with promise-generating functions
     fields.connect = function (protocol) {
       return msg2promise({
         'SCardConnect': { 'protocol': protocol }
@@ -211,10 +212,17 @@
       })
     }
 
-    // TODO: ByteBuffer instead of hex
     fields.transmit = function (apdu) {
       return msg2promise({
-        'SCardTransmit': { 'bytes': apdu }
+        'SCardTransmit': { 'bytes': window.btoa(apdu) }
+      }).then(function (r) {
+        return r.bytes
+      })
+    }
+
+    fields.control = function (code, apdu) {
+      return msg2promise({
+        'SCardControl': { 'code': code, 'bytes': window.btoa(apdu) }
       }).then(function (r) {
         return r.bytes
       })
