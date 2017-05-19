@@ -15,9 +15,16 @@
     return val
   }
 
-  var ws // websocket
+  function ab2b (v) {
+    return window.btoa(String.fromCharCode.apply(null, new Uint8Array(v)))
+  }
+
+  function b2ab (v) {
+    return new Uint8Array(window.atob(v).split('').map(function (c) { return c.charCodeAt(0) })).buffer
+  }
+
   var pending = {} // pending promises
-  var technology = null
+  var port = null
 
   // Resolve or reject the promise if id matches
   function processMessage (reply) {
@@ -45,10 +52,6 @@
     return processMessage(JSON.parse(m.data))
   }
 
-  function postws (m) {
-    ws.send(JSON.stringify(m))
-  }
-
   function postext (m) {
     m['hwcrypto'] = true // This will be removed by content script
     window.postMessage(m, '*')
@@ -56,14 +59,13 @@
 
   // Send a message and return the promise.
   function msg2promise (msg, tech) {
-    //
     return new Promise(function (resolve, reject) {
       // amend with necessary metadata
       msg['id'] = getNonce()
       console.log('SEND: ' + JSON.stringify(msg))
       // send message
-      tech = tech || technology
-      if (tech === 'websocket') { postws(msg) } else if (tech === 'webextension') { postext(msg) } else { reject(new Error('Could not send message, no backend')) }
+      tech = tech || port.technology
+      if (tech === 'websocket') { port.send(msg) } else if (tech === 'webextension') { postext(msg) } else { reject(new Error('Could not send message, no backend')) }
       // and store promise callbacks
       pending[msg['id']] = {
         resolve: resolve,
@@ -99,6 +101,11 @@
     // first try extension, then try ws
     // possibly do some UA parsing here?
     fields.isAvailable = function (timeout) {
+      // Already open
+      if (port) {
+        return Promise.resolve(port.technology)
+      }
+
       // If the extension is not responding, the only
       // way to get a connection without reloading the page
       // is if the application is download and started
@@ -121,19 +128,25 @@
           function connect () {
             delay = delay * 1.3
             try {
-              ws = new WebSocket(APPURL)
+              var ws = {}
+              ws.socket = new WebSocket(APPURL)
+              ws.technology = 'websocket'
 
-              ws.addEventListener('open', function (event) {
+              ws.socket.addEventListener('open', function (event) {
                 console.log('WS open', event)
                 // clearTimeout(retry)
                 console.log('websocket transport activated')
-                resolve('websocket')
+                ws.socket.addEventListener('message', wshandler)
+                ws.send = function (msg) {
+                  ws.socket.send(JSON.stringify(msg))
+                }
+                resolve(ws)
               })
-              ws.addEventListener('message', wshandler)
-              ws.addEventListener('error', function (event) {
+
+              ws.socket.addEventListener('error', function (event) {
                 console.error('WS error: ', event)
               })
-              ws.addEventListener('close', function (event) {
+              ws.socket.addEventListener('close', function (event) {
                 console.error('WS close: ', event)
                 if (retry) {
                   setTimeout(function () {
@@ -153,7 +166,7 @@
       // Race for a port
 
       // Resolves if extension replies. Will never happen if no extension
-      var e = msg2promise({}, 'webextension').then(function (response) { return fields.getVersion() }).then(function (response) { return 'webextension' })
+      var e = msg2promise({}, 'webextension').then(function (response) { return fields.getVersion() }).then(function (response) { return {send: postext, technology: 'webextension'} })
 
       // Rejects after timeout
       var t = new Promise(function (resolve, reject) {
@@ -162,14 +175,14 @@
           reject(new Error('timeout'))
         }, timeout)
       })
-      // resolves if open is successful
+      // resolves to websocket lookalike with .send() if open is successful
       var s = openSocket()
 
       // Race to connection
       return Promise.race([e, s, t]).then(function (r) {
         console.log('race resolved to ', r)
-        technology = r
-        return technology
+        port = r
+        return r.technology
       }).catch(function (err) {
         console.log('Detection race failed', err)
         return false
@@ -179,19 +192,21 @@
     fields.getCertificate = function () {
       // resolves to a certificate handle (in real life b64)
       return msg2promise({ 'certificate': {} }).then(function (r) {
-        return window.atob(r.certificate)
+        console.log(b2ab(r.certificate))
+        return b2ab(r.certificate)
       })
     }
 
     fields.sign = function (cert, hash, options) {
+      console.log(cert)
       return msg2promise({
         'sign': {
-          'certificate': window.btoa(cert),
-          'hash': window.btoa(hash),
+          'certificate': ab2b(cert),
+          'hash': ab2b(hash),
           'hashalgo': options.hashalgo
         }
       }).then(function (r) {
-        return window.atob(r.signature)
+        return b2ab(r.signature)
       })
     }
 
@@ -213,16 +228,17 @@
     }
 
     fields.transmit = function (apdu) {
+      console.log('sending', apdu)
       return msg2promise({
-        'SCardTransmit': { 'bytes': window.btoa(apdu) }
+        'SCardTransmit': { 'bytes': ab2b(apdu) }
       }).then(function (r) {
-        return r.bytes
+        return b2ab(r.bytes)
       })
     }
 
     fields.control = function (code, apdu) {
       return msg2promise({
-        'SCardControl': { 'code': code, 'bytes': window.btoa(apdu) }
+        'SCardControl': { 'code': code, 'bytes': ab2b(apdu) }
       }).then(function (r) {
         return r.bytes
       })
