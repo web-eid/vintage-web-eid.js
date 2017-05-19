@@ -1,6 +1,6 @@
 {
   "name": "web-eid",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Web eID client library",
   "main": "web-eid.js",
   "repository": {
