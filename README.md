@@ -1,6 +1,6 @@
 # web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://www.npmjs.com/package/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://github.com/web-eid/web-eid.js)
 
- [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the messaging interface provided by [Web eID app](https://github.com/web-eid/web-eid/wiki/MessagingAPI), either via [`hwcrypto-extension`](https://github.com/hwcrypto/hwcrypto-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like Android Intents)
+ [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the [messaging interface](https://github.com/web-eid/web-eid/wiki/MessagingAPI) provided by the [Web eID app](https://github.com/web-eid/web-eid), either via [`web-eid-extension`](https://github.com/web-eid/web-eid-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like Android Intents)
 
 It makes using the features provided by Web eID installation as available via [web-eid.com](https://web-eid.com) super-easy:
 
@@ -55,11 +55,10 @@ webeid.isAvailable(object options)
 | `timeout` | timeout in seconds or `Infinity`. Default is `0`|
 
 
-- resolves to `true` or `false`, depending on whether necessary client software is present and available or not
+- resolves to `false` if client software is not available or to a string that describes the connection type of the application (`webextension` or `websocket`)
 - if `false`, the recommended action is to display a notice with a link to https://web-eid.com
 - if called with `timeout = Infinity`, the recommended action is to display a dynamic notice during the call that asks the user to install or start the client app
 - recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
-- possible changes: Boolean https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
 ## PKI operations
 If a PKI call fails, the promise will be rejected with an `Error` object, which `message` property will be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
@@ -130,10 +129,24 @@ webeid.sign(ArrayBuffer certificate, ArrayBuffer hash, object options)
 ## PC/SC operations
 - if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
 
-### `webeid.connect()`
+### `connect`
+```
+webeid.connect(object options)
+```
+
+| parameter  | type        |                                 |
+|------------|-------------|---------------------------------|
+| `options`  | object      | additional options (_optional_) |
+
+| `options` |                                                        |
+|-----------|--------------------------------------------------------|
+| `atrs`    | list of expected ATR-s in base64. Default is `[]`      |
+| `protocol`| protocol to use (`T=`, `T=1`, `*`. Default is `*`      |
+| `timeout` | timeout in seconds or `Infinity`. Default is `Infinity`|
+
 - resolves to a `object`
   - `reader` - `string` - name of the reader
-  - `protocol` - `string` - (optional) protocol of the connection (`T=0` or `T=1`)
+  - `protocol` - `string` - protocol of the connection (`T=0` or `T=1`)
   - `atr` - `ArrayBuffer` - ATR of the card, as reported by the host PC/SC API
 - equivalent of [`SCardConnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in the PC/SC API
 
