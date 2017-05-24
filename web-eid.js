@@ -27,7 +27,8 @@
 
   // Resolve or reject the promise if id matches
   function processMessage (reply) {
-    if (reply.id && reply.id in pending) {
+    // reply.hwcrypto is in window message listener.
+    if (!reply.hwcrypto && reply.id && reply.id in pending) {
       console.log('RECV: ' + JSON.stringify(reply))
       if (!reply.error) {
         pending[reply.id].resolve(reply)
@@ -35,36 +36,29 @@
         pending[reply.id].reject(new Error(reply.error))
       }
       delete pending[reply.id]
-    } else {
-      console.error('id missing on not matched in a reply')
     }
   }
 
-  function exthandler (m) {
-    if (m.data.extension) {
-      return processMessage(m.data)
-    }
-  }
-
-  function wshandler (m) {
-    console.log('WS message', m)
-    return processMessage(JSON.parse(m.data))
-  }
-
-  function postext (m) {
-    m['hwcrypto'] = true // This will be removed by content script
-    window.postMessage(m, '*')
+  function toExtension (msg) {
+    return new Promise(function (resolve, reject) {
+      msg.id = getNonce()
+      msg.hwcrypto = true // This will be removed by content script
+      window.postMessage(msg, '*')
+      pending[msg.id] = {
+        resolve: resolve,
+        reject: reject
+      }
+    })
   }
 
   // Send a message and return the promise.
-  function msg2promise (msg, tech) {
+  function msg2promise (msg) {
     return new Promise(function (resolve, reject) {
       // amend with necessary metadata
-      msg['id'] = getNonce()
+      msg.id = msg.id || getNonce()
       console.log('SEND: ' + JSON.stringify(msg))
       // send message
-      tech = tech || port.technology
-      if (tech === 'websocket') { port.send(msg) } else if (tech === 'webextension') { postext(msg) } else { reject(new Error('Could not send message, no backend')) }
+      port.send(msg)
       // and store promise callbacks
       pending[msg['id']] = {
         resolve: resolve,
@@ -78,15 +72,10 @@
     console.log('Web eID JS shim v' + VERSION)
 
     // register incoming message handler for extension
-    window.addEventListener('message', exthandler)
+    window.addEventListener('message', function (message) { processMessage(message.data) })
 
     // Fields to be exported
     var fields = {}
-
-    // resolves to true or false
-    fields.hasExtension = function () {
-      console.log('Testing for extension')
-    }
 
     // Returns app version
     fields.getVersion = function () {
@@ -97,9 +86,7 @@
       })
     }
 
-    // first try extension, then try ws
-    // possibly do some UA parsing here?
-    fields.isAvailable = function (timeout) {
+    fields.isAvailable = function (options) {
       // Already open
       if (port) {
         return Promise.resolve(port.technology)
@@ -109,9 +96,8 @@
       // way to get a connection without reloading the page
       // is if the application is download and started
       // thus only websockets must be re-tried
-      console.log('Detecting, timeout is ', timeout)
-
-      if (typeof timeout === 'undefined') { timeout = 0 }
+      var timeout = 0
+      if (options) { timeout = options.timeout || 0 }
       if (typeof timeout === 'number') { timeout = timeout * 1000 }
       if (timeout === 0) { timeout = 700 }
       if (timeout === Infinity) { timeout = 10 * 60 * 1000 } // 10 minutes
@@ -125,6 +111,7 @@
         var delay = 1000 // delay before trying to re-connect socket
         return new Promise(function (resolve, reject) {
           function connect () {
+            if (!retry) { return reject(new Error('Already connected')) }
             delay = delay * 1.3
             try {
               var ws = {}
@@ -134,19 +121,20 @@
               ws.socket.addEventListener('open', function (event) {
                 console.log('WS open', event)
                 // clearTimeout(retry)
-                console.log('websocket transport activated')
-                ws.socket.addEventListener('message', wshandler)
+                ws.socket.addEventListener('message', function (m) {
+                  processMessage(JSON.parse(m.data))
+                })
                 ws.send = function (msg) {
                   ws.socket.send(JSON.stringify(msg))
                 }
+                ws.socket.addEventListener('close', function (event) {
+                  console.error('WS close: ', event)
+                  if (port.technology === 'websocket') { port = null }
+                })
                 resolve(ws)
               })
-
               ws.socket.addEventListener('error', function (event) {
                 console.error('WS error: ', event)
-              })
-              ws.socket.addEventListener('close', function (event) {
-                console.error('WS close: ', event)
                 if (retry) {
                   setTimeout(function () {
                     console.log('Will retry in', delay / 1000, 'seconds')
@@ -156,34 +144,45 @@
               })
             } catch (e) {
               console.log('Could not create WS', e)
+              reject(e)
             }
           }
-          connect()
+          // give extension head start
+          setTimeout(connect, 700)
         })
       }
 
       // Race for a port
-
       // Resolves if extension replies. Will never happen if no extension
-      var e = msg2promise({}, 'webextension').then(function (response) { return fields.getVersion() }).then(function (response) { return {send: postext, technology: 'webextension'} })
+      var e = toExtension({version: {}}).then(function (response) {
+        return {
+          send: function (message) {
+            message.hwcrypto = true
+            window.postMessage(message, '*')
+          },
+          technology: 'webextension'
+        }
+      })
 
       // Rejects after timeout
       var t = new Promise(function (resolve, reject) {
         setTimeout(function () {
-          retry = false
           reject(new Error('timeout'))
         }, timeout)
       })
+
       // resolves to websocket lookalike with .send() if open is successful
       var s = openSocket()
 
       // Race to connection
       return Promise.race([e, s, t]).then(function (r) {
-        console.log('race resolved to ', r)
+        retry = false
+        console.log('race resolved', r)
         port = r
         return r.technology
       }).catch(function (err) {
-        console.log('Detection race failed', err)
+        retry = false
+        console.log('race failed', err)
         return false
       })
     }
@@ -209,6 +208,7 @@
       })
     }
 
+    // TODO: return an object where onLogout resolves if cert removed
     fields.auth = function (nonce) {
       return msg2promise({
         'authenticate': { 'nonce': nonce }
