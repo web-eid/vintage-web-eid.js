@@ -13,12 +13,24 @@
     "url": "https://github.com/web-eid/web-eid.js/issues"
   },
   "homepage": "https://github.com/web-eid/web-eid.js#readme",
+   "keywords": [
+    "pcsc",
+    "pkcs11",
+    "smartcard",
+    "eID",
+    "signing",
+    "authentication",
+    "cryptography"
+  ],
   "devDependencies": {
+    "es6-promise": "^4.1.0",
     "pre-commit": "^1.2.2",
-    "standard": "^10.0.2"
+    "standard": "^10.0.2",
+    "unminified-webpack-plugin": "^1.2.0"
   },
   "scripts": {
-    "indent": "standard --fix --global WebSocket --global define"
+    "indent": "standard --fix --global WebSocket --global define web-eid.js",
+    "build": "webpack"
   },
   "pre-commit": [
     "indent"
