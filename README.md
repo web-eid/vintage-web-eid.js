@@ -39,7 +39,7 @@ IE 11 does not have [`Promise` support](http://caniuse.com/#search=promise), thu
 At this point of time no API stability is assured. Please note that if `window.hwcrypto` from [hwcrypto.js](https://github.com/hwcrypto/hwcrypto.js) is detected, `hwcrypto.getCertificate()` and `hwcrypto.sign()` are monkeypatched.
 
 #### Timeouts
-By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set for some calls, so that the operations that depend on user action would fail sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or set to `0` to get an instant error code. Please note that not all calls are cancelable on all platforms, due to unerlying platform limitations.
+By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set for some calls, so that the operations that depend on user action would fail sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or set to `0` to get an instant error code. Please note that not all calls are cancelable on all platforms, due to underlying platform limitations.
 
 ### `isAvailable`
 ```javascript
@@ -58,7 +58,7 @@ webeid.isAvailable(object options)
 - resolves to `false` if client software is not available or to a string that describes the connection type of the application (`webextension` or `websocket`)
 - if `false`, the recommended action is to display a notice with a link to https://web-eid.com
 - if called with `timeout = Infinity`, the recommended action is to display a dynamic notice during the call that asks the user to install or start the client app
-- recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
+- recommended use: guard function before dynamically showing login button; general client availability check before calling rest of the API etc
 
 ## PKI operations
 If a PKI call fails, the promise will be rejected with an `Error` object, which `message` property will be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
@@ -141,10 +141,10 @@ webeid.connect(object options)
 | `options` |                                                        |
 |-----------|--------------------------------------------------------|
 | `atrs`    | list of expected ATR-s in base64. Default is `[]`      |
-| `protocol`| protocol to use (`T=`, `T=1`, `*`. Default is `*`      |
+| `protocol`| protocol to use (`T=`, `T=1`, `*`. Default is `*`)     |
 | `timeout` | timeout in seconds or `Infinity`. Default is `Infinity`|
 
-- resolves to a `object`
+- resolves to an `object`
   - `reader` - `string` - name of the reader
   - `protocol` - `string` - protocol of the connection (`T=0` or `T=1`)
   - `atr` - `ArrayBuffer` - ATR of the card, as reported by the host PC/SC API
