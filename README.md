@@ -141,7 +141,7 @@ webeid.connect(object options)
 | `options` |                                                        |
 |-----------|--------------------------------------------------------|
 | `atrs`    | list of expected ATR-s in base64. Default is `[]`      |
-| `protocol`| protocol to use (`T=`, `T=1`, `*`. Default is `*`      |
+| `protocol`| protocol to use (`T=0`, `T=1`, `*`. Default is `*`      |
 | `timeout` | timeout in seconds or `Infinity`. Default is `Infinity`|
 
 - resolves to a `Reader` object
@@ -151,25 +151,25 @@ webeid.connect(object options)
   - `transmit(ArrayBuffer)` - `function` - transmits the APDU to the card, returns a Promise that resolves to the response
   - `disconnect()` - `function`- disconnects the card, returns a Promise
   - `reconnect(string protocol)` - `function` - reconnects with the specified protocol, returns a Promise
-- equivalent of [`SCardConnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in the PC/SC API
-- `SCardConnect` is called with `SCARD_SHARE_EXCLUSIVE` or if it is not possible, with `SCARD_SHARE_SHARE` and a `SCardBeginTransaction` on non-Windows machines
+- equivalent for [`SCardConnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in the PC/SC API
+- `SCardConnect` is called with `SCARD_SHARE_EXCLUSIVE` or if it is not possible, with `SCARD_SHARE_SHARED` and a `SCardBeginTransaction()` on non-Windows machines
 
 ### `Reader.transmit(bytes)`
 - resolves to `ArrayBuffer` of the response
 - equivalent of [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
 - resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the tidbits of channels or `61XX`/`6CXX` handling
-- comparable to [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
+- comparable for [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
 
 ### `Reader.control(code, bytes)`
 - resolves to `ArrayBuffer` of the response
-- equivalent of [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API
+- equivalent for [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API
 
 ### `Reader.reconnect(protocol)`
 - resolves to `true`. `Reader` object properties `protocol` and `atr` might have changed
-- equivalent of [`SCardReconnect`](hhttps://msdn.microsoft.com/en-us/library/windows/desktop/aa379797(v=vs.85).aspx) in PC/SC API
+- equivalent for [`SCardReconnect`](hhttps://msdn.microsoft.com/en-us/library/windows/desktop/aa379797(v=vs.85).aspx) in PC/SC API
 
 ### `Reader.disconnect()`
-- equivalent of [`SCardDisconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379475(v=vs.85).aspx) in PC/SC API
+- equivalent for [`SCardDisconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379475(v=vs.85).aspx) in PC/SC API
 - `SCardDisconnect` is called with `SCARD_RESET_CARD` argument
 
 ## Error codes
