@@ -58,6 +58,7 @@
       msg.id = msg.id || getNonce()
       console.log('SEND: ' + JSON.stringify(msg))
       // send message
+      if (!port) { reject(new Error('App has disappeared')) }
       port.send(msg)
       // and store promise callbacks
       pending[msg['id']] = {
@@ -97,7 +98,7 @@
       // is if the application is download and started
       // thus only websockets must be re-tried
       var timeout = 0
-      if (options) { timeout = options.timeout || 0 }
+      if (options) { timeout = options.timeout || timeout }
       if (typeof timeout === 'number') { timeout = timeout * 1000 }
       if (timeout === 0) { timeout = 700 }
       if (timeout === Infinity) { timeout = 10 * 60 * 1000 } // 10 minutes
@@ -177,7 +178,7 @@
       // Race to connection
       return Promise.race([e, s, t]).then(function (r) {
         retry = false
-        console.log('race resolved', r)
+        console.log('race resolved to', r.technology)
         port = r
         return r.technology
       }).catch(function (err) {
@@ -187,16 +188,15 @@
       })
     }
 
-    fields.getCertificate = function () {
+    fields.getCertificate = function (options) {
+      options = options || {}
       // resolves to a certificate handle (in real life b64)
-      return msg2promise({ 'certificate': {} }).then(function (r) {
-        console.log(b2ab(r.certificate))
+      return msg2promise({ 'certificate': options }).then(function (r) {
         return b2ab(r.certificate)
       })
     }
 
     fields.sign = function (cert, hash, options) {
-      console.log(cert)
       return msg2promise({
         'sign': {
           'certificate': ab2b(cert),
@@ -217,37 +217,56 @@
       })
     }
 
-    // TODO: return a reader object with promise-generating functions
-    fields.connect = function (protocol) {
-      return msg2promise({
-        'SCardConnect': { 'protocol': protocol }
-      }).then(function (r) {
-        return { 'reader': r.reader, 'atr': r.atr, 'protocol': r.protocol }
-      })
-    }
+    // Connect to a card reader in plain PC/SC mode
+    fields.connect = function (options) {
+      if (options === 'undefined') { options = {} }
 
-    fields.transmit = function (apdu) {
-      console.log('sending', apdu)
-      return msg2promise({
-        'SCardTransmit': { 'bytes': ab2b(apdu) }
-      }).then(function (r) {
-        return b2ab(r.bytes)
-      })
-    }
+      var timeout = options.timeout || Infinity
+      // Infinity is actually 1 hour
+      if (timeout === Infinity) { timeout = 3600 }
 
-    fields.control = function (code, apdu) {
-      return msg2promise({
-        'SCardControl': { 'code': code, 'bytes': ab2b(apdu) }
-      }).then(function (r) {
-        return r.bytes
-      })
-    }
+      var atrs = options.atrs || []
+      atrs = atrs.map(function (x) { return ab2b(x) })
 
-    fields.disconnect = function () {
+      var protocol = options.protocol || '*'
+
       return msg2promise({
-        'SCardDisconnect': {}
+        SCardConnect: {protocol: protocol, atrs: atrs}
       }).then(function (r) {
-        return {}
+        return {
+          name: r.name,
+          atr: b2ab(r.atr),
+          protocol: r.protocol,
+
+          transmit: function (bytes) {
+            return msg2promise({
+              SCardTransmit: {reader: r.name, bytes: ab2b(bytes)}
+            }).then(function (r) {
+              return b2ab(r.bytes)
+            })
+          },
+          reconnect: function (protocol) {
+            return msg2promise({
+              SCardReconnect: {reader: r.name, protocol: protocol}
+            }).then(function (r) {
+              return true
+            })
+          },
+          disconnect: function () {
+            return msg2promise({
+              SCardDisconnect: {reader: r.name}
+            }).then(function (r) {
+              return true
+            })
+          },
+          control: function (code, bytes) {
+            return msg2promise({
+              SCardControl: {reader: r.name, code: code, bytes: ab2b(bytes)}
+            }).then(function (r) {
+              return b2ab(r.bytes)
+            })
+          }
+        }
       })
     }
 
