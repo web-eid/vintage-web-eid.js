@@ -14,7 +14,7 @@ Just download the file and use it in a script tag
 
     <script src="web-eid.js"></script>
 
-Functionality will be bound to `window.webeid`
+Functionality shall be bound to `window.webeid`
 
 ## Bower
     $ bower install --save web-eid
@@ -32,7 +32,7 @@ IE 11 does not have [`Promise` support](http://caniuse.com/#search=promise), thu
 # API
 - All calls are asynchronous in nature and return a Promise
 - While asynchronous, the API is still sequential - only one call can be serviced by a smart card (reader) at a time. If a call can not be serviced because this reason, the promise shall be rejected
-- The `message` property of a rejected promise (an [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)) will contain a symbolic error code that can be parsed
+- The `message` property of a rejected promise (an [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)) shall contain a symbolic error code that can be parsed
 - Conformance to https://www.w3.org/2001/tag/doc/promises-guide is intended
 
 ## Note about API and stability
@@ -61,7 +61,7 @@ webeid.isAvailable(object options)
 - recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
 
 ## PKI operations
-If a PKI call fails, the promise will be rejected with an `Error` object, which `message` property will be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
+If a PKI call fails, the promise shall be rejected with an `Error` object, which `message` property shall be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
 
 ### `authenticate`
 ```javascript
@@ -142,14 +142,14 @@ webeid.authenticatedWebSocket(string url, object options)
 | `autoclose`         | set to `true` to close the socket when the card is removed |
 | `timeout`           | timeout in seconds or `Infinity`. Default is `Infinity`    |
 
-- the first message from the service MUST be JSON and MUST contain the nonce (`{"nonce": "noncevalue"}`)
+- the first message from the service MUST be JSON and MUST contain the nonce `{"nonce": "noncevalue"}`
 - `authenticate()` is called with the nonce
-- the authentication token is sent back to the service as JSON (`{"token": "authenticationtoken"}`)
+- the authentication token is sent back to the service as JSON `{"token": "authenticationtoken"}`
 - promise is resolved with the WebSocket object
 - if a card remove event is detected and autoclose is enabled, the socket is closed
 
 ## PC/SC operations
-- if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
+- if rejected, the message of the Error object for PC/SC operations shall be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
 
 ### `connect`
 ```
