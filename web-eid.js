@@ -209,13 +209,14 @@
     }
 
     // TODO: return an object where onLogout resolves if cert removed
-    fields.auth = function (nonce) {
+    function authenticate (nonce) {
       return msg2promise({
         'authenticate': { 'nonce': nonce }
       }).then(function (r) {
         return r.token
       })
     }
+    fields.authenticate = authenticate
 
     // Connect to a card reader in plain PC/SC mode
     fields.connect = function (options) {
@@ -270,6 +271,28 @@
       })
     }
 
+    fields.authenticatedWebSocket = function (url, options) {
+      return new Promise(function (resolve, reject) {
+        var socket = new WebSocket(url)
+        socket.addEventListener('open', function (event) {
+          var messagelistener = socket.addEventListener('message', function (event) {
+            var msg = JSON.parse(event.data)
+            if (!msg.nonce) {
+              reject(new Error('No .nonce in first message'))
+            }
+            var nonce = JSON.parse(event.data).nonce
+            authenticate(nonce).then(function (token) {
+              socket.send(JSON.stringify({token: token}))
+              socket.removeEventListener('message', messagelistener)
+              resolve(socket)
+            })
+          })
+        })
+        socket.addEventListener('error', function (event) {
+          reject(event)
+        })
+      })
+    }
     fields.VERSION = VERSION
     fields.promisify = msg2promise
 
