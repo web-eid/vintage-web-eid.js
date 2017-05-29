@@ -129,17 +129,24 @@ webeid.sign(ArrayBuffer certificate, ArrayBuffer hash, object options)
 ## WebSocket operations
 ### `authenticatedWebSocket`
 ```javascript
-webeid.authenticatedWebSocket(string url)
+webeid.authenticatedWebSocket(string url, object options)
 ```
 
 | parameter     | type        |                                   |
 |---------------|-------------|-----------------------------------|
 | `url`         | string      | URL to connect to (**required**)  |
+| `options`     | object      | additional options (_optional_)   |
+
+| `options`           |                                                            |
+|---------------------|------------------------------------------------------------|
+| `autoclose`         | set to `true` to close the socket when the card is removed |
+| `timeout`           | timeout in seconds or `Infinity`. Default is `Infinity`    |
 
 - the first message from the service MUST be JSON and MUST contain the nonce (`{"nonce": "noncevalue"}`)
 - `authenticate()` is called with the nonce
 - the authentication token is sent back to the service as JSON (`{"token": "authenticationtoken"}`)
 - promise is resolved with the WebSocket object
+- if a card remove event is detected and autoclose is enabled, the socket is closed
 
 ## PC/SC operations
 - if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
