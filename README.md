@@ -126,6 +126,21 @@ webeid.sign(ArrayBuffer certificate, ArrayBuffer hash, object options)
 - possible reasons for rejection: user cancels/refuses signing, user PIN is blocked, some other technical error
 - possible changes: support for "last round on card" hashing
 
+## WebSocket operations
+### `authenticatedWebSocket`
+```javascript
+webeid.authenticatedWebSocket(string url)
+```
+
+| parameter     | type        |                                   |
+|---------------|-------------|-----------------------------------|
+| `url`         | string      | URL to connect to (**required**)  |
+
+- the first message from the service MUST be JSON and MUST contain the nonce (`{"nonce": "noncevalue"}`)
+- `authenticate()` is called with the nonce
+- the authentication token is sent back to the service as JSON (`{"token": "authenticationtoken"}`)
+- promise is resolved with the WebSocket object
+
 ## PC/SC operations
 - if rejected, the message of the Error object for PC/SC operations will be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
 
