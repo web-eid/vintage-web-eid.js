@@ -274,25 +274,33 @@
     fields.authenticatedWebSocket = function (url, options) {
       return new Promise(function (resolve, reject) {
         var socket = new WebSocket(url)
-        socket.addEventListener('open', function (event) {
-          var messagelistener = socket.addEventListener('message', function (event) {
-            var msg = JSON.parse(event.data)
-            if (!msg.nonce) {
-              reject(new Error('No .nonce in first message'))
-            }
-            var nonce = JSON.parse(event.data).nonce
-            authenticate(nonce).then(function (token) {
-              socket.send(JSON.stringify({token: token}))
-              socket.removeEventListener('message', messagelistener)
-              resolve(socket)
-            })
-          })
-        })
-        socket.addEventListener('error', function (event) {
+        function errorHandler (event) {
           reject(event)
-        })
+        }
+
+        function messageHandler (event) {
+          socket.removeEventListener('message', messageHandler)
+          var msg = JSON.parse(event.data)
+          if (!msg.nonce) {
+            reject(new Error('No .nonce in first message'))
+          }
+          authenticate(msg.nonce).then(function (token) {
+            socket.send(JSON.stringify({token: token}))
+            socket.removeEventListener('error', errorHandler)
+            resolve(socket)
+          }, function (reason) {
+            socket.close()
+            reject(reason)
+          })
+        }
+        function openHandler (event) {
+          socket.addEventListener('message', messageHandler)
+        }
+        socket.addEventListener('error', errorHandler)
+        socket.addEventListener('open', openHandler)
       })
     }
+
     fields.VERSION = VERSION
     fields.promisify = msg2promise
 
