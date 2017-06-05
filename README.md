@@ -1,6 +1,6 @@
 # web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://www.npmjs.com/package/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://github.com/web-eid/web-eid.js)
 
- [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the [messaging interface](https://github.com/web-eid/web-eid/wiki/MessagingAPI) provided by the [Web eID app](https://github.com/web-eid/web-eid), either via [`web-eid-extension`](https://github.com/web-eid/web-eid-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like Android Intents)
+ [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the [messaging interface](https://github.com/web-eid/web-eid/wiki/MessagingAPI) provided by the [Web eID app](https://github.com/web-eid/web-eid), either via [`web-eid-extension`](https://github.com/web-eid/web-eid-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like [Android Intents](https://developer.android.com/guide/components/intents-filters.html))
 
 It makes using the features provided by Web eID installation as available via [web-eid.com](https://web-eid.com) super-easy:
 
@@ -39,7 +39,7 @@ IE 11 does not have [`Promise` support](http://caniuse.com/#search=promise), thu
 At this point of time no API stability is assured. Please note that if `window.hwcrypto` from [hwcrypto.js](https://github.com/hwcrypto/hwcrypto.js) is detected, `hwcrypto.getCertificate()` and `hwcrypto.sign()` are monkeypatched.
 
 #### Timeouts
-By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set for some calls, so that the operations that depend on user action would fail sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or set to `0` to get an instant error code. Please note that not all calls are cancelable on all platforms, due to unerlying platform limitations.
+By default the execution time of a call depends on the underlying hardware and timeout is infinite. A timeout can be set for some calls, so that the operations that depend on user action would fail sooner (e.g. do not wait forever but fail in 2 minutes, if the user does not connect a card reader and insert a card in time) or set to `0` to get an instant error code. Please note that not all calls are cancelable on all platforms, due to underlying platform limitations.
 
 ### `isAvailable`
 ```javascript
@@ -58,7 +58,7 @@ webeid.isAvailable(object options)
 - resolves to `false` if client software is not available or to a string that describes the connection type of the application (`webextension` or `websocket`)
 - if `false`, the recommended action is to display a notice with a link to https://web-eid.com
 - if called with `timeout = Infinity`, the recommended action is to display a dynamic notice during the call that asks the user to install or start the client app
-- recommended use: guard function before dynamicallly showing login button; general client availability check before calling rest of the API etc
+- recommended use: guard function before dynamically showing login button; general client availability check before calling rest of the API etc
 
 ## PKI operations
 If a PKI call fails, the promise shall be rejected with an `Error` object, which `message` property shall be a string from [CKR_* series](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html#_Toc385057886) (PKCS#11, CNG/CryptoAPI return codes are mapped)
@@ -163,7 +163,7 @@ webeid.connect(object options)
 | `options` |                                                        |
 |-----------|--------------------------------------------------------|
 | `atrs`    | list of expected ATR-s in base64. Default is `[]`      |
-| `protocol`| protocol to use (`T=0`, `T=1`, `*`. Default is `*`      |
+| `protocol`| protocol to use (`T=0`, `T=1`, `*`. Default is `*`)    |
 | `timeout` | timeout in seconds or `Infinity`. Default is `Infinity`|
 
 - resolves to a `Reader` object
@@ -182,10 +182,6 @@ webeid.connect(object options)
 - resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the tidbits of channels or `61XX`/`6CXX` handling
 - comparable for [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
 
-### `Reader.control(code, bytes)`
-- resolves to `ArrayBuffer` of the response
-- equivalent for [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API
-
 ### `Reader.reconnect(protocol)`
 - resolves to `true`. `Reader` object properties `protocol` and `atr` might have changed
 - equivalent for [`SCardReconnect`](hhttps://msdn.microsoft.com/en-us/library/windows/desktop/aa379797(v=vs.85).aspx) in PC/SC API
@@ -193,6 +189,21 @@ webeid.connect(object options)
 ### `Reader.disconnect()`
 - equivalent for [`SCardDisconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379475(v=vs.85).aspx) in PC/SC API
 - `SCardDisconnect` is called with `SCARD_RESET_CARD` argument
+
+### `Reader.control(code, bytes)` (WIP)
+- see [@web-eid/web-eid#47](https://github.com/web-eid/web-eid/issues/47) for a tracking issue
+- resolves to `ArrayBuffer` of the response
+- equivalent for [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API
+- NB! Probably will not happen, will only have verify/modify with transparent pinpad support. +1 the ticket to have plain SCardControl support
+
+### `Reader.verifyPIN(options)` (WIP)
+- resolves to `ArrayBuffer` of the response
+- equivalent for [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API with the appropriate PC/SCv2 part 10 block based on options or client side PIN input UI
+
+### `Reader.modifyPIN(options)` (WIP)
+- resolves to `ArrayBuffer` of the response
+- equivalent for [`SCardControl`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379474(v=vs.85).aspx) in PC/SC API with the appropriate PC/SCv2 part 10 block based on options or client side PIN input UI
+
 
 ## Error codes
 - `SCARD_E_READER_UNAVAILABLE` - if `webeid.connect()` has not been called or the reader has disappeared
