@@ -54,7 +54,7 @@ webeid.isAvailable(object options)
 |-----------|-------------------------------------------------|
 | `timeout` | timeout in seconds or `Infinity`. Default is `0`|
 
-
+- does the discovery of client application and MUST be called before any other calls. Safe to call several times.
 - resolves to `false` if client software is not available or to a string that describes the connection type of the application (`webextension` or `websocket`)
 - if `false`, the recommended action is to display a notice with a link to https://web-eid.com
 - if called with `timeout = Infinity`, the recommended action is to display a dynamic notice during the call that asks the user to install or start the client app
@@ -178,9 +178,9 @@ webeid.connect(object options)
 
 ### `Reader.transmit(bytes)`
 - resolves to `ArrayBuffer` of the response
-- equivalent of [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
+- equivalent for [`SCardTransmit`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379804(v=vs.85).aspx) in PC/SC API
 - resembles [transmitRaw](https://globalplatform.github.io/WebApis-for-SE/doc/#dom-channel-transmitraw), without the tidbits of channels or `61XX`/`6CXX` handling
-- comparable for [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
+- comparable to [transceive()](https://developer.android.com/reference/android/nfc/tech/IsoDep.html#transceive(byte[])) in Android IsoDep API
 
 ### `Reader.reconnect(protocol)`
 - resolves to `true`. `Reader` object properties `protocol` and `atr` might have changed
