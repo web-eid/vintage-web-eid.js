@@ -184,7 +184,7 @@ webeid.connect(object options)
 
 ### `Reader.reconnect(protocol)`
 - resolves to `true`. `Reader` object properties `protocol` and `atr` might have changed
-- equivalent for [`SCardReconnect`](hhttps://msdn.microsoft.com/en-us/library/windows/desktop/aa379797(v=vs.85).aspx) in PC/SC API
+- equivalent for [`SCardReconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379797(v=vs.85).aspx) in PC/SC API
 
 ### `Reader.disconnect()`
 - equivalent for [`SCardDisconnect`](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379475(v=vs.85).aspx) in PC/SC API
