@@ -150,6 +150,7 @@ webeid.authenticatedWebSocket(string url, object options)
 
 ## PC/SC operations
 - if rejected, the message of the Error object for PC/SC operations shall be a [PC/SC API error code](https://pcsclite.alioth.debian.org/api/group__ErrorCodes.html) as a string (e.g. `"SCARD_E_NOT_TRANSACTED"`)
+- [Tutorial](https://github.com/web-eid/web-eid.js/wiki/Tutorials#accessing-a-pcsc-smart-card-reader)
 
 ### `connect`
 ```
