@@ -4,7 +4,7 @@
 
 It makes using the features provided by Web eID installation as available via [web-eid.com](https://web-eid.com) super-easy:
 
-- provides an asynchronous, Promise-based DWIM interface
+- provides an asynchronous, [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based DWIM interface
 - listens to incoming messages and turns them into resolved Promises
 
 Please note that this library is not an all-inclusive toolkit for developing web apps that use cryptography, it is intended as a companion library for [WebCryptoAPI](http://caniuse.com/#feat=cryptography) and/or [PKI.js](https://pkijs.org/) or similar. Web eID solves two low hanging fruits that are missing from browser implementations but necessary to develop apps _today_, that make use of the hundreds of millions of devices deployed in the field: _controlled access to smart card based pre-provisioned certificates_ (that by definition do not fall under the [Same Origin Policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) of WebCryptoAPI) for authentication, signing and decryption and _controlled direct access to a smart card_, like a local PC/SC application would have.
