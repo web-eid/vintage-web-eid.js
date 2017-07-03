@@ -7,6 +7,8 @@ It makes using the features provided by Web eID installation as available via [w
 - provides an asynchronous, Promise-based DWIM interface
 - listens to incoming messages and turns them into resolved Promises
 
+Please note that this library is not an all-inclusive toolkit for developing web apps that use cryptography, it is intended as a companion library for [WebCryptoAPI](http://caniuse.com/#feat=cryptography) and/or [PKI.js](https://pkijs.org/) or similar. Web eID solves two low hanging fruits that are missing from browser implementations but necessary to develop apps _today_, that make use of the hundreds of millions of devices deployed in the field: controlled access to smart card based pre-provisioned certificates (that by definition do not fall under the [Same Origin Policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)) for authentication, signing and decryption and controlled direct access to a smart card, like a local PC/SC application would have.
+
 ## Installation
 
 ### Browser installation
@@ -125,6 +127,29 @@ webeid.sign(ArrayBuffer certificate, ArrayBuffer hash, object options)
 - resolves to a `ArrayBuffer` containing the signature of the `hash` parameter (ArrayBuffer) generated with the private key belonging to the `certificate` (ArrayBuffer). Hash type is specified in `options.hashalgo` (`string`) and is one of "SHA-256", "SHA-384", "SHA-512"
 - possible reasons for rejection: user cancels/refuses signing, user PIN is blocked, some other technical error
 - possible changes: support for "last round on card" hashing
+
+
+### `decrypt` (WIP)
+```javascript
+webeid.decrypt(ArrayBuffer certificate, ArrayBuffer payload, object options)
+```
+
+| parameter     | type        |                                   |
+|---------------|-------------|-----------------------------------|
+| `certificate` | ArrayBuffer | certificate to use (**required**) |
+| `payload`     | ArrayBuffer | payload to decrypt (**required**) |
+| `options`     | object      | additional options (_optional_)   |
+
+
+| `options`  |                                                        |
+|------------|--------------------------------------------------------|
+| `algorithm`| algorithm type (`"RSA-OAEP"` etc). (**required**) |
+| `timeout`  | timeout in seconds or `Infinity`. Default is `Infinity`|
+
+
+- resolves to a `ArrayBuffer` containing the decrypted data of the `payload` parameter (ArrayBuffer).
+- possible reasons for rejection: user cancels/refuses decryption, no key, user PIN is blocked, some other technical error
+- please note that the result of decryption is usually a transport key (3DES, AES or some other symmetric algorithm)
 
 ## WebSocket operations
 ### `authenticatedWebSocket`
