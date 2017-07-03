@@ -1,6 +1,6 @@
 # web-eid.js &middot; [![npm version](https://badge.fury.io/js/web-eid.svg)](https://www.npmjs.com/package/web-eid) [![Bower version](https://badge.fury.io/bo/web-eid.svg)](https://github.com/web-eid/web-eid.js)
 
- [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the [messaging interface](https://github.com/web-eid/web-eid/wiki/MessagingAPI) provided by the [Web eID app](https://github.com/web-eid/web-eid), either via [`web-eid-extension`](https://github.com/web-eid/web-eid-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like [Android Intents](https://developer.android.com/guide/components/intents-filters.html))
+ [`web-eid.js`](./web-eid.js) is a ultrathin wrapper on top of the [messaging interface](https://github.com/web-eid/web-eid/wiki/MessagingAPI) provided by the [Web eID app](https://github.com/web-eid/web-eid), either via [web-eid-extension](https://github.com/web-eid/web-eid-extension) [HTML5 postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) interface or [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) or some other message transport in the future (like [Android Intents](https://developer.android.com/guide/components/intents-filters.html))
 
 It makes using the features provided by Web eID installation as available via [web-eid.com](https://web-eid.com) super-easy:
 
